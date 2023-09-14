@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Alert, FlatList } from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { Alert, FlatList, TextInput } from "react-native";
 import { useRoute } from "@react-navigation/native";
 
 import { Highlight } from "@components/Highlight";
@@ -13,9 +13,9 @@ import { Button } from "@components/Button";
 import { playerAddByGroup } from "@storage/player/playerAddByGroup";
 import { AppError } from "@utils/AppError";
 import { playersGetByGroupAndTeam } from "@storage/player/playerGetByGroupAndTeam";
+import { PlayerStorageDTO } from "@storage/player/PlayerStorageDTO";
 
 import { Container, Form, HeaderList, NumbersOfPlayers } from "./styles";
-import { PlayerStorageDTO } from "@storage/player/PlayerStorageDTO";
 
 type RouteParams = {
     group: string;
@@ -29,6 +29,8 @@ export function Players() {
     const route = useRoute();
     const { group } = route.params as RouteParams;
 
+    const newPlayerNameInputRef = useRef<TextInput>(null)
+
     async function handleAddPlayer() {
         if(newPlayerName.trim().length === 0) {
             return Alert.alert("Nova Pessoa", "Informe o nome da pessoa para adicionar.")
@@ -41,6 +43,10 @@ export function Players() {
 
         try {
             await playerAddByGroup(newPlayer, group)
+
+            newPlayerNameInputRef.current?.blur();
+            
+            setNewPlayerName('')
             fetchPlayersByTeam();
         } catch (error) {
             if(error instanceof AppError) {
@@ -78,10 +84,13 @@ export function Players() {
 
             <Form>
                 <Input 
+                    inputRef={newPlayerNameInputRef}
                     onChangeText={setNewPlayerName}
                     value={newPlayerName}
                     placeholder="Nome da pessoa"
                     autoCorrect={false}
+                    onSubmitEditing={handleAddPlayer}
+                    returnKeyType="done"
                 />
                 <ButtonIcon 
                     icon="add"
