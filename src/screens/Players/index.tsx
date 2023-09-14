@@ -12,15 +12,17 @@ import { ListEmpty } from "@components/ListEmpty";
 import { Button } from "@components/Button";
 import { playerAddByGroup } from "@storage/player/playerAddByGroup";
 import { AppError } from "@utils/AppError";
+import { playersGetByGroupAndTeam } from "@storage/player/playerGetByGroupAndTeam";
 
 import { Container, Form, HeaderList, NumbersOfPlayers } from "./styles";
+import { PlayerStorageDTO } from "@storage/player/PlayerStorageDTO";
 
 type RouteParams = {
     group: string;
 }
 
 export function Players() {
-    const [players, setPlayers] = useState<string[]>([]);
+    const [players, setPlayers] = useState<PlayerStorageDTO[]>([]);
     const [newPlayerName, setNewPlayerName] = useState<string>('');
     const [team, setTeam] = useState<string>('');
 
@@ -46,6 +48,17 @@ export function Players() {
                 Alert.alert("Nova Pessoa", "Não foi possível adicionar.");
                 console.log(error)
             }
+        }
+    }
+
+
+    async function fetchPlayersByTeam() {
+        try {
+            const playersByTeam = await playersGetByGroupAndTeam(group, team)
+            setPlayers(playersByTeam)
+        } catch (error) {
+            console.log(error)
+            Alert.alert("Pessoas", "Não foi possível carregar as pessoas filtradas do time selecionado.")
         }
     }
 
@@ -92,10 +105,10 @@ export function Players() {
             
             <FlatList 
                 data={players}
-                keyExtractor={item => item}
+                keyExtractor={item => item.name}
                 renderItem={({ item }) => (
                     <PlayerCard 
-                        name={item} 
+                        name={item.name} 
                         onRemove={() => {}}
                     />
                 )}
