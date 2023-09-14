@@ -18,12 +18,14 @@ import { playerRemoveByGroup } from "@storage/player/playerRemoveByGroup";
 
 import { Container, Form, HeaderList, NumbersOfPlayers } from "./styles";
 import { groupRemoveByName } from "@storage/group/groupRemoveByName";
+import { Loading } from "@components/Loading";
 
 type RouteParams = {
     group: string;
 }
 
 export function Players() {
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [players, setPlayers] = useState<PlayerStorageDTO[]>([]);
     const [newPlayerName, setNewPlayerName] = useState<string>('');
     const [team, setTeam] = useState<string>('Time A');
@@ -65,12 +67,15 @@ export function Players() {
 
     async function fetchPlayersByTeam() {
         try {
+            setIsLoading(true)
             const playersByTeam = await playersGetByGroupAndTeam(group, team)
             setPlayers(playersByTeam)
         } catch (error) {
             console.log(error)
             Alert.alert("Pessoas", "Não foi possível carregar as pessoas filtradas do time selecionado.")
-        }
+        } finally {
+            setIsLoading(false)
+          }
     }
 
     async function handleRemovePlayer(playerName: string) {
@@ -96,7 +101,7 @@ export function Players() {
     async function handleGroupRemove() {
         Alert.alert(
             'Remover',
-            'Deseja remover o grupo?',
+            'Deseja remover a turma?',
             [
                 {
                     text: 'Sim',
@@ -158,7 +163,9 @@ export function Players() {
                 </NumbersOfPlayers>
             </HeaderList>
             
-            <FlatList 
+            {
+                isLoading ? <Loading /> :
+                <FlatList 
                 data={players}
                 keyExtractor={item => item.name}
                 renderItem={({ item }) => (
@@ -178,6 +185,7 @@ export function Players() {
                     players.length === 0 && { flex: 1 }
                 ]}
             />
+            }
 
             <Button 
                 title="Remover turma"
