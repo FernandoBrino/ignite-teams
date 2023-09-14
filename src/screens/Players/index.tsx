@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Alert, FlatList } from "react-native";
 import { useRoute } from "@react-navigation/native";
 
@@ -24,7 +24,7 @@ type RouteParams = {
 export function Players() {
     const [players, setPlayers] = useState<PlayerStorageDTO[]>([]);
     const [newPlayerName, setNewPlayerName] = useState<string>('');
-    const [team, setTeam] = useState<string>('');
+    const [team, setTeam] = useState<string>('Time A');
 
     const route = useRoute();
     const { group } = route.params as RouteParams;
@@ -41,6 +41,7 @@ export function Players() {
 
         try {
             await playerAddByGroup(newPlayer, group)
+            fetchPlayersByTeam();
         } catch (error) {
             if(error instanceof AppError) {
                 Alert.alert("Nova Pessoa", error.message)
@@ -61,6 +62,10 @@ export function Players() {
             Alert.alert("Pessoas", "Não foi possível carregar as pessoas filtradas do time selecionado.")
         }
     }
+
+    useEffect(() => {
+        fetchPlayersByTeam();
+    }, [team])
 
     return (
         <Container> 
